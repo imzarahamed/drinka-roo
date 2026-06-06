@@ -13,15 +13,15 @@ export default function LoginPage() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true); setError('')
+    setLoading(true)
+    setError('')
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setError('Invalid email or password.')
       setLoading(false)
       return
     }
-    router.push('/dashboard')
-    router.refresh()
+    await router.push('/dashboard')
   }
 
   return (

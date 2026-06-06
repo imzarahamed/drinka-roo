@@ -21,8 +21,7 @@ export default function HubLoginPage() {
       setLoading(false)
       return
     }
-    router.push('/')
-    router.refresh()
+    await router.push('/dashboard')
   }
 
   return (
