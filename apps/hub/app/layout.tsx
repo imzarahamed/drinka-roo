@@ -1,23 +1,19 @@
-// Use the local path to the server-side Supabase helper. Adjust if your project
-// keeps the helper in a different location (e.g. /lib or /utils).
-// Adjusted import to use the project-level lib path where the Supabase
-// server helper typically resides.
-import { createServerSupabase } from '../lib/supabase'
-import { redirect } from 'next/navigation'
-import { Sidebar } from '../components/sidebar'
+import type { Metadata } from 'next'
+import './globals.css'
 
-export default async function HubLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createServerSupabase()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+export const metadata: Metadata = {
+  title: 'Hub Admin',
+  description: 'Hub administrative dashboard',
+}
 
-  const { data: profile } = await supabase
-    .from('hub_profiles').select('full_name, role').eq('id', user.id).single()
-
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <div className="flex h-screen">
-      <Sidebar role={profile?.role} userName={profile?.full_name} />
-      <main className="flex-1 overflow-auto bg-gray-50 p-6">{children}</main>
-    </div>
+    <html lang="en">
+      <body>{children}</body>
+    </html>
   )
 }

@@ -1,4 +1,4 @@
-import { createServerSupabase } from '../../lib/supabase'
+import { createServerSupabase } from '@/lib/supabase'
 
 const STATUS_COLORS: Record<string, string> = {
   pending:     'bg-yellow-100 text-yellow-700',

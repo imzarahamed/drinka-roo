@@ -1,5 +1,5 @@
 'use server'
-import { createServerSupabase, uploadProductImage } from '../../lib/supabase'
+import { createServerSupabase, uploadProductImage } from '@/lib/supabase'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 

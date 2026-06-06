@@ -1,4 +1,4 @@
-import { createServerSupabase } from '../../lib/supabase'
+import { createServerSupabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { DeleteProduct } from './delete-button'
 

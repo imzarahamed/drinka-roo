@@ -1,5 +1,5 @@
 'use server'
-import { createServerSupabase } from '../../../lib/supabase'
+import { createServerSupabase } from '@/lib/supabase'
 import { revalidatePath } from 'next/cache'
 
 export async function updateOrderStatus(orderId: string, status: string) {
