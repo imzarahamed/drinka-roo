@@ -10,6 +10,26 @@ Run the following command:
 npx create-turbo@latest
 ```
 
+## Environment variables
+
+Copy `.env.local.example` to `.env.local` and add your Supabase project values before running the app.
+
+```sh
+cp .env.local.example .env.local
+```
+
+Required values:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+Optional server-side values:
+
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_ADMIN_KEY`
+
 ## What's inside?
 
 This Turborepo includes the following packages/apps:
