@@ -4,7 +4,7 @@ import { ProductGrid } from '../components/product-grid'
 import { CategoryBar } from '../components/category-bar'
 
 export default async function HomePage() {
-  const supabase = createServerSupabase()
+  const supabase = await createServerSupabase()
 
   const [{ data: featured }, { data: categories }] = await Promise.all([
     supabase.from('products')
