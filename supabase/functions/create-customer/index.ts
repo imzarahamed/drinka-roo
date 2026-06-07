@@ -58,9 +58,9 @@ Deno.serve(async (req) => {
   if (send_email) {
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
     await resend.emails.send({
-      from: 'accounts@yourcompany.com',
+      from: 'onboarding@resend.dev',
       to: email,
-      subject: 'Your wholesale account is ready',
+      subject: 'Your drinkaroo account is ready',
       html: `
         <h2>Welcome, ${full_name}!</h2>
         <p>Your account has been created. Login at:</p>

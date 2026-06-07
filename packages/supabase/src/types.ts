@@ -40,7 +40,7 @@ export type Database = {
       }
       customer_profiles: {
         Row: {
-          address: Json | null
+          address: string | null
           company_name: string | null
           created_at: string | null
           created_by: string | null
@@ -52,7 +52,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          address?: Json | null
+          address?: string | null
           company_name?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -64,7 +64,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          address?: Json | null
+          address?: string | null
           company_name?: string | null
           created_at?: string | null
           created_by?: string | null

@@ -6,6 +6,7 @@ const NAV = [
   { href: '/dashboard',  label: 'Dashboard',  roles: ['super_admin','manager','order_viewer','staff'] },
   { href: '/orders',     label: 'Orders',      roles: ['super_admin','manager','order_viewer','staff'] },
   { href: '/products',   label: 'Products',    roles: ['super_admin','manager'] },
+  { href: '/categories', label: 'Categories', roles: ['super_admin','manager'] },
   { href: '/customers',  label: 'Customers',   roles: ['super_admin','manager'] },
   { href: '/reports',    label: 'Reports',     roles: ['super_admin','manager'] },
   { href: '/staff',      label: 'Staff',       roles: ['super_admin'] },

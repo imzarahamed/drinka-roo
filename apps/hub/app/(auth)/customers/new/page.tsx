@@ -16,7 +16,17 @@ export default function NewCustomerPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    const { data: { session } } = await supabase.auth.getSession()
+
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    
+    if (!session) {
+      console.error('No session:', sessionError)
+      alert('You are not logged in.')
+      setLoading(false)
+      return
+    }
+
+    console.log('Token:', session.access_token) // 👈 verify token exists
 
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-customer`,
@@ -24,15 +34,20 @@ export default function NewCustomerPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session!.access_token}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(form),
       }
     )
+
     const data = await res.json()
+    console.log('Status:', res.status, 'Response:', data)
+
     if (data.success) {
       setDone(true)
       setTimeout(() => router.push('/customers'), 2000)
+    } else {
+      alert(data.error || 'Something went wrong')
     }
     setLoading(false)
   }

@@ -9,8 +9,18 @@ export async function createProduct(formData: FormData) {
 
   let imageUrl: string | null = null
   const productId = crypto.randomUUID()
+
   if (imageFile && imageFile.size > 0) {
-    imageUrl = await uploadProductImage(imageFile, productId)
+    const ext = imageFile.name.split('.').pop()
+    const path = `products/${productId}/${Date.now()}.${ext}`
+    const { error } = await supabase.storage
+      .from('product-images')
+      .upload(path, imageFile, { upsert: true })
+    if (error) throw error
+    const { data: publicData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(path)
+    imageUrl = publicData.publicUrl
   }
 
   const name = formData.get('name') as string
