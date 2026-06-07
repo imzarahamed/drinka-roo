@@ -12,7 +12,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default async function OrdersPage({
   searchParams
 }: { searchParams: { status?: string } }) {
-  const supabase = createServerSupabase()
+  const supabase = await createServerSupabase()
   let query = supabase.from('orders').select(`
     id, order_number, status, total_amount, created_at,
     customer_profiles(full_name, company_name)

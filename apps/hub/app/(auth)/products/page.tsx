@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { DeleteProduct } from './delete-button'
 
 export default async function ProductsPage() {
-  const supabase = createServerSupabase()
+  const supabase = await createServerSupabase()
   const { data: products } = await supabase
     .from('products')
     .select('*, categories(name)')
