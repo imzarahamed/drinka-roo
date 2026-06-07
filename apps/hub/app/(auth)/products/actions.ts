@@ -33,9 +33,9 @@ export async function createProduct(formData: FormData) {
     description: formData.get('description') as string,
     price: Number(formData.get('price')),
     stock_quantity: Number(formData.get('stock_quantity')),
-    category_id: formData.get('category_id') as string || null,
+    category_id: (formData.get('category_id') as string) || null,
     images: imageUrl ? [imageUrl] : [],
-    sku: formData.get('sku') as string || null,
+    sku: (formData.get('sku') as string) || null,
     is_active: formData.get('is_active') === 'true',
   })
 
@@ -45,13 +45,46 @@ export async function createProduct(formData: FormData) {
 
 export async function updateProduct(id: string, formData: FormData) {
   const supabase = await createServerSupabase()
-  await supabase.from('products').update({
-    name: formData.get('name') as string,
-    description: formData.get('description') as string,
-    price: Number(formData.get('price')),
-    stock_quantity: Number(formData.get('stock_quantity')),
-    is_active: formData.get('is_active') === 'true',
-  }).eq('id', id)
+  const imageFile = formData.get('image') as File | null
+
+  // Fetch existing product to preserve current images if no new one uploaded
+  const { data: existing } = await supabase
+    .from('products')
+    .select('images')
+    .eq('id', id)
+    .single()
+
+  let images = existing?.images ?? []
+
+  if (imageFile && imageFile.size > 0) {
+    const ext = imageFile.name.split('.').pop()
+    const path = `products/${id}/${Date.now()}.${ext}`
+    const { error } = await supabase.storage
+      .from('product-images')
+      .upload(path, imageFile, { upsert: true })
+    if (error) throw error
+    const { data: publicData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(path)
+    images = [publicData.publicUrl]
+  }
+
+  const name = formData.get('name') as string
+
+  await supabase
+    .from('products')
+    .update({
+      name,
+      description: formData.get('description') as string,
+      price: Number(formData.get('price')),
+      stock_quantity: Number(formData.get('stock_quantity')),
+      category_id: (formData.get('category_id') as string) || null,
+      sku: (formData.get('sku') as string) || null,
+      is_active: formData.get('is_active') === 'true',
+      images,
+    })
+    .eq('id', id)
+
   revalidatePath('/products')
   redirect('/products')
 }

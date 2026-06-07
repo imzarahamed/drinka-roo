@@ -1,5 +1,6 @@
 import { createServerSupabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { DeleteCustomer } from './delete-button'
 
 export default async function CustomersPage() {
   const supabase = await createServerSupabase()
@@ -15,8 +16,10 @@ export default async function CustomersPage() {
     <div>
       <div className="flex justify-between mb-6">
         <h1 className="text-2xl font-semibold">Customers</h1>
-        <Link href="/customers/new"
-          className="bg-black text-white px-4 py-2 rounded-lg text-sm">
+        <Link
+          href="/customers/new"
+          className="bg-black text-white px-4 py-2 rounded-lg text-sm"
+        >
           + Add customer
         </Link>
       </div>
@@ -34,12 +37,13 @@ export default async function CustomersPage() {
               <th className="px-4 py-3 font-medium">Phone</th>
               <th className="px-4 py-3 font-medium">Orders</th>
               <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody className="divide-y">
             {customers?.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
                   No customers yet.
                 </td>
               </tr>
@@ -53,10 +57,24 @@ export default async function CustomersPage() {
                   {c.orders?.[0]?.count ?? 0}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium
-                    ${c.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      c.is_active
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-500'
+                    }`}
+                  >
                     {c.is_active ? 'Active' : 'Inactive'}
                   </span>
+                </td>
+                <td className="px-4 py-3 flex gap-2">
+                  <Link
+                    href={`/customers/${c.id}/edit`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Edit
+                  </Link>
+                  <DeleteCustomer id={c.id} name={c.full_name} />
                 </td>
               </tr>
             ))}

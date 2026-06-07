@@ -1,0 +1,1 @@
+export { DeleteCustomer } from './delete-button.client'

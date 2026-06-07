@@ -5,18 +5,20 @@ import { updateCategory } from '../../actions'
 export default async function EditCategoryPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   const supabase = await createServerSupabase()
+
   const { data: category } = await supabase
     .from('categories')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!category) notFound()
 
-  const action = updateCategory.bind(null, params.id)
+  const action = updateCategory.bind(null, id)
 
   return (
     <div className="max-w-2xl">
