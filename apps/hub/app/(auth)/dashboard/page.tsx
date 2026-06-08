@@ -27,6 +27,8 @@ export default async function DashboardPage() {
     dispatched: 'bg-orange-100 text-orange-700',
     delivered:  'bg-green-100 text-green-700',
     cancelled:  'bg-red-100 text-red-600',
+    // user-requested variant
+    cancled:    'bg-red-100 text-red-600',
   }
 
   return (

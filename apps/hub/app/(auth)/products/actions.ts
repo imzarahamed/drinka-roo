@@ -91,6 +91,6 @@ export async function updateProduct(id: string, formData: FormData) {
 
 export async function deleteProduct(id: string) {
   const supabase = await createServerSupabase()
-  await supabase.from('products').update({ is_active: false }).eq('id', id)
+  await supabase.from('products').delete().eq('id', id)
   revalidatePath('/products')
 }

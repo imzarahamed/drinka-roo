@@ -7,6 +7,8 @@ const STATUS_COLORS: Record<string, string> = {
   dispatched:  'bg-orange-100 text-orange-700',
   delivered:   'bg-green-100 text-green-700',
   cancelled:   'bg-red-100 text-red-600',
+  // user requested new status spelled "cancled"
+  cancled:     'bg-red-100 text-red-600',
 }
 
 export default async function OrdersPage({
@@ -27,7 +29,7 @@ export default async function OrdersPage({
       <h1 className="text-2xl font-semibold mb-4">Orders</h1>
       {/* Status filter tabs */}
       <div className="flex gap-2 mb-4 text-sm">
-        {['all','pending','confirmed','dispatched','delivered'].map((s: string) => (
+        {['all','pending','confirmed','processing','dispatched','delivered','cancled'].map((s: string) => (
           <a key={s} href={s === 'all' ? '/orders' : `/orders?status=${s}`}
             className={`px-3 py-1 rounded-full border capitalize
               ${(searchParams.status ?? 'all') === s ? 'bg-black text-white border-black' : 'border-gray-200'}`}>
