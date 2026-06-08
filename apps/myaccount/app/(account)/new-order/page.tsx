@@ -19,27 +19,44 @@ export default function NewOrderPage() {
 
   async function placeOrder() {
     setSubmitting(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    const items = Object.entries(cart).filter(([_, q]) => q > 0)
-    if (!items.length) return
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.error('No authenticated user')
+        return
+      }
 
-    const total = items.reduce((sum, [id, qty]) => {
-      const p = products.find(p => p.id === id)
-      return sum + (p?.price ?? 0) * qty
-    }, 0)
+      const items = Object.entries(cart).filter(([_, q]) => q > 0)
+      if (!items.length) return
 
-    const { data: order } = await supabase.from('orders')
-      .insert({ customer_id: user!.id, total_amount: total })
-      .select().single()
+      const total = items.reduce((sum, [id, qty]) => {
+        const p = products.find(p => p.id === id)
+        return sum + (p?.price ?? 0) * qty
+      }, 0)
 
-    await supabase.from('order_items').insert(
-      items.map(([id, qty]) => {
-        const p = products.find(p => p.id === id)!
-        return { order_id: order!.id, product_id: id,
-          product_name: p.name, quantity: qty, unit_price: p.price }
-      })
-    )
-    window.location.href = `/orders/${order!.id}`
+      const { data: order, error: orderError } = await supabase.from('orders')
+        .insert({ customer_id: user.id, total_amount: total })
+        .select().single()
+
+      if (orderError) throw orderError
+
+      const { error: itemsError } = await supabase.from('order_items').insert(
+        items.map(([id, qty]) => {
+          const p = products.find(p => p.id === id)!
+          return { order_id: order.id, product_id: id,
+            product_name: p.name, quantity: qty, unit_price: p.price }
+        })
+      )
+
+      if (itemsError) throw itemsError
+
+      window.location.href = `/orders/${order.id}`
+    } catch (err) {
+      console.error('Place order failed', err)
+      alert('Failed to place order — check console for details.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (

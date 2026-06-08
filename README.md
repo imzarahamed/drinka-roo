@@ -1,179 +1,186 @@
-# Turborepo starter
+# Drinka-Roo — Turborepo Monorepo
 
-This Turborepo starter is maintained by the Turborepo core team.
+A wholesale platform built with Next.js, Supabase, and Turborepo. Includes three apps:
 
-## Using this example
+- **`hub`** — Internal admin dashboard for managing products, orders, customers, and staff
+- **`myaccount`** — Customer-facing portal for viewing orders and account details
+- **`site`** — Public-facing product catalog
 
-Run the following command:
+---
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) >= 18
+- [npm](https://www.npmjs.com/) >= 10
+- A [Supabase](https://supabase.com/) project (free tier works)
+
+---
+
+## Getting Started
+
+### 1. Clone the repository
 
 ```sh
-npx create-turbo@latest
+git clone <your-repo-url>
+cd drinka-roo
 ```
 
-## Environment variables
+### 2. Install dependencies
 
-Copy `.env.local.example` to `.env.local` and add your Supabase project values before running the app.
+This installs all packages including `turbo`, which is required to run the monorepo.
+
+```sh
+npm install
+```
+
+> If you get an error like `'turbo' is not recognized`, it means dependencies haven't been installed yet. Running `npm install` from the project root will fix this. Alternatively, install Turbo globally: `npm install -g turbo`
+
+### 3. Set up environment variables
+
+Copy the example env file and fill in your Supabase credentials:
 
 ```sh
 cp .env.local.example .env.local
 ```
 
-Required values:
+Then open `.env.local` and add your values:
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
-Optional server-side values:
+# Optional — for server-side/admin usage
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `SUPABASE_ADMIN_KEY`
-
-## What's inside?
-
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+# Used by the create-customer Edge Function to send email credentials
+MYACCOUNT_URL=http://localhost:3001
+RESEND_API_KEY=your-resend-api-key
 ```
 
-Without global `turbo`, use your package manager:
+You can find `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in your Supabase project under **Settings → API**.
+
+> Each app (`hub`, `myaccount`, `site`) reads from the same `.env.local` at the root. You can also create per-app `.env.local` files inside each `apps/*` folder if you need different values.
+
+### 4. Set up the database
+
+#### a. Connect Supabase CLI to your project
+
+Install the [Supabase CLI](https://supabase.com/docs/guides/cli) if you haven't already, then link your project:
 
 ```sh
-cd my-turborepo
-npx turbo build
-npm dlx turbo build
-npm exec turbo build
+npx supabase login
+npx supabase link --project-ref your-project-ref
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+Your project ref is the subdomain in your Supabase URL (e.g. `xcwgsuluidkjlwmshkem`).
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+#### b. Run migrations
+
+Push the database schema to your Supabase project:
 
 ```sh
-turbo build --filter=docs
+npx supabase db push
 ```
 
-Without global `turbo`:
+This will create the following tables in your database:
+
+| Table | Description |
+|---|---|
+| `categories` | Product categories with slug and sort order |
+| `products` | Product catalog with pricing, stock, images, and SEO fields |
+| `hub_profiles` | Internal staff accounts with role-based access (`super_admin`, `manager`, `order_viewer`, `staff`) |
+| `customer_profiles` | Customer accounts linked to Supabase Auth |
+| `orders` | Customer orders with status tracking |
+| `order_items` | Line items within each order |
+
+#### c. Set up Storage (for product images)
+
+In your Supabase dashboard, go to **Storage** and create a public bucket named `product-images`.
+
+#### d. Create your first admin user
+
+In the Supabase dashboard, go to **Authentication → Users** and create a new user manually. Then in the **Table Editor**, open `hub_profiles` and insert a row with that user's `id` (UUID from Auth), a `full_name`, and `role` set to `super_admin`.
+
+#### e. Deploy Edge Functions (optional)
+
+The `create-customer` and `create-hub-user` Supabase Edge Functions handle provisioning new user accounts. To deploy them:
 
 ```sh
-npx turbo build --filter=docs
-npm exec turbo build --filter=docs
-npm exec turbo build --filter=docs
+npx supabase functions deploy create-customer
+npx supabase functions deploy create-hub-user
 ```
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+Set the required secrets in your Supabase project under **Settings → Edge Functions**:
 
 ```sh
-cd my-turborepo
-turbo dev
+npx supabase secrets set RESEND_API_KEY=your-resend-api-key
+npx supabase secrets set MYACCOUNT_URL=https://your-myaccount-domain.com
 ```
 
-Without global `turbo`, use your package manager:
+### 5. Run the development server
 
 ```sh
-cd my-turborepo
-npx turbo dev
-npm exec turbo dev
-npm exec turbo dev
+npm run dev
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+This starts all three apps simultaneously using Turbo:
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+| App | Default URL |
+|---|---|
+| `hub` | http://localhost:3000 |
+| `myaccount` | http://localhost:3001 |
+| `site` | http://localhost:3002 |
+
+To run a specific app only:
 
 ```sh
-turbo dev --filter=web
+npx turbo dev --filter=hub
+npx turbo dev --filter=myaccount
+npx turbo dev --filter=site
 ```
 
-Without global `turbo`:
+---
 
-```sh
-npx turbo dev --filter=web
-npm exec turbo dev --filter=web
-npm exec turbo dev --filter=web
+## Project Structure
+
+```
+drinka-roo/
+├── apps/
+│   ├── hub/          # Admin dashboard (Next.js)
+│   ├── myaccount/    # Customer portal (Next.js)
+│   └── site/         # Public catalog (Next.js)
+├── packages/
+│   ├── supabase/     # Shared Supabase client and TypeScript types
+│   ├── ui/           # Shared React component library
+│   ├── eslint-config/
+│   └── typescript-config/
+├── supabase/
+│   └── functions/    # Supabase Edge Functions
+├── .env.local.example
+└── turbo.json
 ```
 
-### Remote Caching
+---
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+## Available Scripts
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+Run from the project root:
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+| Command | Description |
+|---|---|
+| `npm run dev` | Start all apps in development mode |
+| `npm run build` | Build all apps |
+| `npm run lint` | Lint all packages |
+| `npm run format` | Format all files with Prettier |
+| `npm run check-types` | TypeScript type checking across all packages |
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-npm exec turbo login
-npm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-npm exec turbo link
-npm exec turbo link
-```
+---
 
 ## Useful Links
 
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+- [Turborepo Docs](https://turborepo.dev/docs)
+- [Next.js Docs](https://nextjs.org/docs)
+- [Supabase Docs](https://supabase.com/docs)
+- [Supabase CLI Reference](https://supabase.com/docs/guides/cli/getting-started)
