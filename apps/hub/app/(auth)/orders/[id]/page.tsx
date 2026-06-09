@@ -2,7 +2,8 @@ import { createServerSupabase } from '@/lib/supabase'
 import Link from 'next/link'
 import StatusChanger from './StatusChanger.client'
 
-export default async function OrderPage({ params }: { params: { id: string } }) {
+export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createServerSupabase()
 
   // Try several lookups because IDs may be numeric or string, or the link
@@ -16,12 +17,12 @@ export default async function OrderPage({ params }: { params: { id: string } }) 
     `
 
   // 1) Try id as string
-  let res = await supabase.from('orders').select(selectCols).eq('id', params.id).limit(1)
+  let res = await supabase.from('orders').select(selectCols).eq('id', id).limit(1)
   if (res.error) {
     return (
       <div>
         <p className="text-sm">Supabase error querying order by id (string): {res.error.message}</p>
-        <p className="text-xs text-gray-500 mt-2">Tried id: {params.id}</p>
+        <p className="text-xs text-gray-500 mt-2">Tried id: {id}</p>
         <Link href="/orders" className="text-sm text-blue-600">Back to orders</Link>
       </div>
     )
@@ -30,7 +31,7 @@ export default async function OrderPage({ params }: { params: { id: string } }) 
 
   // 2) Try numeric id
   if (!order) {
-    const maybeNum = Number(params.id)
+    const maybeNum = Number(id)
     if (!Number.isNaN(maybeNum)) {
       res = await supabase.from('orders').select(selectCols).eq('id', maybeNum).limit(1)
       if (res.error) {
@@ -48,12 +49,12 @@ export default async function OrderPage({ params }: { params: { id: string } }) 
 
   // 3) Try order_number
   if (!order) {
-    res = await supabase.from('orders').select(selectCols).eq('order_number', params.id).limit(1)
+    res = await supabase.from('orders').select(selectCols).eq('order_number', id).limit(1)
     if (res.error) {
       return (
         <div>
           <p className="text-sm">Supabase error querying order by order_number: {res.error.message}</p>
-          <p className="text-xs text-gray-500 mt-2">Tried order_number: {params.id}</p>
+          <p className="text-xs text-gray-500 mt-2">Tried order_number: {id}</p>
           <Link href="/orders" className="text-sm text-blue-600">Back to orders</Link>
         </div>
       )
@@ -65,7 +66,7 @@ export default async function OrderPage({ params }: { params: { id: string } }) 
     return (
       <div>
         <p className="text-sm">Order not found.</p>
-        <p className="text-xs text-gray-500 mt-2">Tried id: {params.id}</p>
+        <p className="text-xs text-gray-500 mt-2">Tried id: {id}</p>
         <Link href="/orders" className="text-sm text-blue-600">Back to orders</Link>
       </div>
     )

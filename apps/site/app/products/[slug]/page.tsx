@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const supabase = createServerSupabase()
+  const supabase = await createServerSupabase()
   const { data } = await supabase.from('products').select('name,meta_title,meta_desc')
     .eq('slug', params.slug).single()
   if (!data) return { title: 'Product not found' }
@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const supabase = createServerSupabase()
+  const supabase = await createServerSupabase()
   const { data: product } = await supabase
     .from('products')
     .select('*, categories(name,slug)')

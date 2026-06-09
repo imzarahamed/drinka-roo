@@ -26,6 +26,25 @@ export default function NewOrderPage() {
         return
       }
 
+      // Ensure a customer profile exists for this auth user. Orders reference
+      // `customer_profiles.id` so insertion will fail if the profile is missing.
+      const { data: existingProfile } = await supabase
+        .from('customer_profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single()
+      if (!existingProfile) {
+        // full_name is required by the database schema, so provide a fallback
+        const fullName = (user.user_metadata as any)?.full_name ||
+                        user.email?.split('@')[0] ||
+                        'Customer'
+        const { error: profileError } = await supabase.from('customer_profiles').insert({
+          id: user.id,
+          full_name: fullName,
+        })
+        if (profileError) throw profileError
+      }
+
       const items = Object.entries(cart).filter(([_, q]) => q > 0)
       if (!items.length) return
 
@@ -34,8 +53,15 @@ export default function NewOrderPage() {
         return sum + (p?.price ?? 0) * qty
       }, 0)
 
+      // Generate a unique order number
+      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`
+
       const { data: order, error: orderError } = await supabase.from('orders')
-        .insert({ customer_id: user.id, total_amount: total })
+        .insert({
+          customer_id: user.id,
+          total_amount: total,
+          order_number: orderNumber
+        })
         .select().single()
 
       if (orderError) throw orderError

@@ -8,7 +8,7 @@ export default async function ProductsPage({
 }: {
   searchParams: { category?: string; search?: string; page?: string }
 }) {
-  const supabase = createServerSupabase()
+  const supabase = await createServerSupabase()
   const page = Number(searchParams.page ?? 1)
   const limit = 24
   const from = (page - 1) * limit
